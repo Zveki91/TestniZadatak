@@ -1,0 +1,62 @@
+services:
+  webserver:
+    build: ./WebServer
+    container_name: webserver
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_URL=Test:TestniPassword@tcp(mysql:3306)/TestnaBaza
+      - REDIS_ADDR=redis:6379
+    depends_on:
+      - dbservice
+      - mysql
+      - redis
+
+  idempotencyservice:
+    build: ./IdempotencyService
+    container_name: idempotencyservice
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_URL=Test:TestniPassword@tcp(mysql:3306)/TestnaBaza
+      - REDIS_ADDR=redis:6379
+    depends_on:
+      - dbservice
+      - mysql
+      - redis
+
+  dbservice:
+    build: ./DbService
+    container_name: dbservice
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_URL=Test:TestniPassword@tcp(mysql:3306)/TestnaBaza
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: TestniRootPassword
+      MYSQL_DATABASE: TestnaBaza
+      MYSQL_USER: Test
+      MYSQL_PASSWORD: TestniPassword
+    volumes:
+      - mysqldata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  mysqldata:
+  redisdata:
